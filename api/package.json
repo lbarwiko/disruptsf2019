@@ -1,0 +1,28 @@
+{
+  "name": "sendit",
+  "version": "0.0.1",
+  "description": "Send it",
+  "main": "api.js",
+  "scripts": {
+    "prod": "pm2 start --interpreter ./node_modules/babel-cli/bin/babel-node.js ./src/api.js",
+    "start": "nodemon --exec babel-node ./src/api.js"
+  },
+  "author": "Best Self",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/core": "^7.4.5",
+    "@babel/preset-env": "^7.4.5",
+    "babel-node": "0.0.1-security",
+    "body-parser": "^1.18.2",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "libphonenumber-js": "^1.7.20",
+    "morgan": "^1.9.0",
+    "nodemon": "^1.12.1",
+    "pm2": "^2.10.1",
+    "redis": "^2.8.0"
+  },
+  "devDependencies": {
+    "@babel/node": "^7.6.2"
+  }
+}
