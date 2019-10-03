@@ -1,4 +1,5 @@
 import { Router } from 'express';
+var moment = require('moment');
 
 export default (redis, config) => {
   const router = Router();
@@ -58,6 +59,52 @@ export default (redis, config) => {
         error: false
       });
     });
+  });
+
+  router.get('/transactions', (request, response) => {
+    var startDate = moment().subtract(30, 'days').format('YYYY-MM-DD');
+    var endDate = moment().format('YYYY-MM-DD');
+    console.log('access token', ACCESS_TOKEN);
+    plaidClient.getTransactions(ACCESS_TOKEN, startDate, endDate, {
+      count: 250,
+      offset: 0,
+    }, (error, transactionsResponse) => {
+      if (error != null) {
+        console.error(error);
+        return response.json({
+          error: error
+        });
+      } else {
+        console.log(transactionsResponse);
+        response.json({ error: null, transactions: transactionsResponse });
+      }
+    });
+  });
+
+  router.get('/balance', (request, response) => {
+    plaidClient.getBalance(ACCESS_TOKEN, (error, accountsResponse) => {
+      if (error != null) {
+        console.error(error);
+        return response.json({
+          error: error,
+        });
+      }
+      console.log(accountsResponse);
+      response.json({ error: null, accounts: accountsResponse });
+    })
+  });
+
+  router.get('/liabilities', (request, response) => {
+    plaidClient.getLiabilities(ACCESS_TOKEN, (error, liabilitiesResult) => {
+      if (error != null) {
+        console.error(error);
+        return response.json({
+          error: error,
+        });
+      }
+      console.log(liabilitiesResult);
+      response.json({ error: null, liabilities: liabilitiesResult });
+    })
   });
 
   return router;
