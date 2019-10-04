@@ -1,5 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:http/http.dart' as http;
+
+import '../constants.dart';
 
 class MyLineChart extends StatefulWidget {
   @override
@@ -7,6 +13,13 @@ class MyLineChart extends StatefulWidget {
 }
 
 class _MyLineChartState extends State<MyLineChart> {
+
+  @override
+  void initState() {
+    super.initState();
+    loadData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -17,15 +30,14 @@ class _MyLineChartState extends State<MyLineChart> {
   SfCartesianChart getDefaultSplineChart(bool isTileView) {
     return SfCartesianChart(
       plotAreaBorderWidth: 0,
-      title: ChartTitle(
-          text: isTileView ? '' : 'Average high/low temperature of London'),
-      legend: Legend(isVisible: isTileView ? false : true),
+      title: ChartTitle(text: isTileView ? '' : 'Previous month expenditure'),
+      legend: Legend(isVisible: false),
       primaryXAxis: CategoryAxis(
           majorGridLines: MajorGridLines(width: 0),
           labelPlacement: LabelPlacement.onTicks),
       primaryYAxis: NumericAxis(
-          minimum: 30,
-          maximum: 80,
+          minimum: 50,
+          maximum: 150,
           axisLine: AxisLine(width: 0),
           edgeLabelPlacement: EdgeLabelPlacement.shift,
           labelFormat: '\${value}',
@@ -36,20 +48,6 @@ class _MyLineChartState extends State<MyLineChart> {
   }
 
   List<SplineSeries<_ChartData, String>> getSplineSeries(bool isTileView) {
-    final List<_ChartData> chartData = <_ChartData>[
-      _ChartData('Jan', 43, 41),
-      _ChartData('Feb', 45, 45),
-      _ChartData('Mar', 50, 48),
-      _ChartData('Apr', 55, 52),
-      _ChartData('May', 63, 57),
-      _ChartData('Jun', 68, 61),
-      _ChartData('Jul', 72, 66),
-      _ChartData('Aug', 70, 66),
-      _ChartData('Sep', 66, 63),
-      _ChartData('Oct', 57, 55),
-      _ChartData('Nov', 50, 50),
-      _ChartData('Dec', 45, 45)
-    ];
     return <SplineSeries<_ChartData, String>>[
       SplineSeries<_ChartData, String>(
         enableTooltip: true,
@@ -57,16 +55,37 @@ class _MyLineChartState extends State<MyLineChart> {
         xValueMapper: (_ChartData sales, _) => sales.x,
         yValueMapper: (_ChartData sales, _) => sales.high,
         markerSettings: MarkerSettings(isVisible: true),
-        name: 'High',
       ),
     ];
+  }
+
+  final List<_ChartData> chartData = <_ChartData>[];
+
+  void loadData() async {
+    setState(() {
+      chartData.clear();
+    });
+    var response = await http.get('$BASE_URL/transactionData');
+    Map<String, dynamic> responseMap = json.decode(response.body);
+    var spendingList = responseMap['spending'];
+
+    var initialDate = DateTime.now().subtract(Duration(days: 23));
+    double prev = 0;
+    for (double spending in spendingList) {
+      print('spending ${spending - prev}');
+      var data =
+          _ChartData(DateFormat('Md').format(initialDate), spending - prev);
+      prev = spending;
+      chartData.add(data);
+      initialDate = initialDate.add(Duration(days: 1));
+    }
+    setState(() {});
   }
 }
 
 class _ChartData {
-  _ChartData(this.x, this.high, this.average);
+  _ChartData(this.x, this.high);
 
   final String x;
   final double high;
-  final double average;
 }

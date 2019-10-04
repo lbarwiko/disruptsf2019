@@ -11,7 +11,6 @@
 </head>
 
 <body>
-  <button id="link-button">Link Account</button>
   <script type="text/javascript">
     (function ($) {
       var handler = Plaid.create({
@@ -29,9 +28,10 @@
           // The metadata object contains info about the institution the
           // user selected and the account ID or IDs, if the
           // Select Account view is enabled.
-          $.post('/get_access_token', {
-            public_token: public_token,
-          });
+          Print.postMessage(public_token);
+          // $.post('/get_access_token', {
+          //   public_token: public_token,
+          // });
         },
         onExit: function (err, metadata) {
           // The user exited the Link flow.
@@ -56,9 +56,12 @@
         }
       });
 
-      $('#link-button').on('click', function (e) {
+      $(document).ready(()=>{
         handler.open();
-      });
+      })
+      // $('#link-button').on('click', function (e) {
+      //   handler.open();
+      // });
     })(jQuery);
   </script>
 </body>
