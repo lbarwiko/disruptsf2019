@@ -47,8 +47,8 @@ class _ExpenseReportPageState extends State<ExpenseReportPage> {
           majorGridLines: MajorGridLines(width: 0),
           labelPlacement: LabelPlacement.onTicks),
       primaryYAxis: NumericAxis(
-          minimum: 50,
-          maximum: 150,
+          minimum: 0,
+          maximum: 1000,
           axisLine: AxisLine(width: 0),
           edgeLabelPlacement: EdgeLabelPlacement.shift,
           labelFormat: '\${value}',
@@ -69,15 +69,16 @@ class _ExpenseReportPageState extends State<ExpenseReportPage> {
       ),
       SplineSeries<_ChartData, String>(
         enableTooltip: false,
-        dataSource: chartData,
-        xValueMapper: (_ChartData sales, _) => sales.x ,
-        yValueMapper: (_ChartData sales, _) => sales.high + 10,
-        markerSettings: MarkerSettings(isVisible: false),
+        dataSource: chartDataPredicted,
+        xValueMapper: (_ChartData sales, _) => sales.x,
+        yValueMapper: (_ChartData sales, _) => sales.high,
+        markerSettings: MarkerSettings(isVisible: true),
       ),
     ];
   }
 
   final List<_ChartData> chartData = <_ChartData>[];
+  final List<_ChartData> chartDataPredicted = <_ChartData>[];
 
   void processData(var data) async {
     setState(() {
@@ -85,6 +86,7 @@ class _ExpenseReportPageState extends State<ExpenseReportPage> {
     });
 
     var spendingList = data['spending'];
+    var projectedList = data['projection'];
 
     var initialDate = DateTime.now().subtract(Duration(days: 23));
     double prev = 0;
@@ -97,7 +99,15 @@ class _ExpenseReportPageState extends State<ExpenseReportPage> {
       initialDate = initialDate.add(Duration(days: 1));
     }
 
-
+    chartDataPredicted.addAll(chartData);
+    initialDate.add(Duration(days: 1));
+    for (double spending in projectedList) {
+      var data =
+          _ChartData(DateFormat('Md').format(initialDate), spending - prev);
+      prev = spending;
+      chartDataPredicted.add(data);
+      initialDate = initialDate.add(Duration(days: 1));
+    }
 
     setState(() {});
   }
