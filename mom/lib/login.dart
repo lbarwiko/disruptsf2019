@@ -15,7 +15,7 @@ class _LoginPageState extends State<LoginPage> {
   final Completer<WebViewController> controller =
       Completer<WebViewController>();
 
-  static const String BASE_URL = "https://4811c7d1.ngrok.io";
+  static const String BASE_URL = "https://bcb0d5ab.ngrok.io";
 
   @override
   Widget build(BuildContext context) {
