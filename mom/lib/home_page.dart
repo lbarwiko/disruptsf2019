@@ -10,49 +10,39 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  SpeechRecognition _speech;
-
-  bool _speechRecognitionAvailable = false;
+  SpeechRecognition _speechRecognition;
+  bool _isAvailable = false;
   bool _isListening = false;
+  bool _isModalShown = false;
 
-  String transcription = '';
+  String resultText = "";
 
-  //String _currentLocale = 'en_US';
-  String selectedLang = 'en_US';
+  PersistentBottomSheetController _controller; // <------ Instance variable
+  final _scaffoldKey =
+      GlobalKey<ScaffoldState>(); // <---- Another instance variable
 
   @override
   void initState() {
     super.initState();
-    activateSpeechRecognizer();
+    initSpeechRecognizer();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text('Dashboard'),
         actions: <Widget>[
           Center(
-              child: Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: Text(
-              '\$5K',
-              style: TextStyle(fontWeight: FontWeight.normal, fontSize: 20),
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: Text(
+                '\$5K',
+                style: TextStyle(fontWeight: FontWeight.normal, fontSize: 20),
+              ),
             ),
-          )),
-          MaterialButton(
-            child: Icon(Icons.play_arrow),
-            onPressed: () {
-              _speech.listen();
-            },
           ),
-          MaterialButton(
-            child: Icon(Icons.stop),
-            onPressed: () {
-              _speech.stop();
-            },
-          ),
-
           /*IconButton(
             icon: Icon(Icons.portrait),
             onPressed: () {
@@ -81,54 +71,43 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.format_quote),
-        onPressed: () {
-          start();
-          showModalBottomSheet(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              context: context,
-              builder: (builder) {
-                return new Container(
-                  height: 150.0,
-                  color: Colors.transparent,
-                  child: new Container(
-                      child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8, top: 8),
-                        child: Row(
-                          children: <Widget>[
-                            Padding(
-                              padding: const EdgeInsets.only(right: 4),
-                              child: CircleAvatar(
-                                child: Icon(
-                                  Icons.alternate_email,
-                                  color: Colors.white,
-                                  size: 18,
-                                ),
-                                backgroundColor: Colors.indigo,
-                              ),
-                            ),
-                            getMessageBox('RIGHT', 'What do you wanna buy?')
-                          ],
-                        ),
-                      )
-                    ],
-                  )),
+      floatingActionButton: !_isModalShown
+          ? FloatingActionButton(
+              child: Icon(Icons.format_quote),
+              onPressed: () {
+                setState(() {
+                  _isModalShown = true;
+                });
+                startListening();
+                _controller = _scaffoldKey.currentState.showBottomSheet(
+                  (context) {
+                    return _modalContainer();
+                  },
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  elevation: 10,
                 );
-              });
-        },
-      ),
+              },
+            )
+          : FloatingActionButton(
+              child: Icon(Icons.close),
+              onPressed: () {
+                _controller.close();
+                if (_isListening)
+                  _speechRecognition.stop().then(
+                        (result) => setState(() => _isListening = result),
+                      );
+                setState(() {
+                  _isModalShown = false;
+                });
+              },
+            ),
     );
   }
 
   getMessageBox(String direction, String text) {
-    return direction == 'LEFT'
+    return direction == 'RIGHT'
         ? new Container(
             padding: const EdgeInsets.all(12.0),
             margin: const EdgeInsets.only(top: 10.0, left: 60.0),
@@ -156,52 +135,101 @@ class _HomePageState extends State<HomePage> {
 
   getTextMessage(String text) => Text(text);
 
-  void activateSpeechRecognizer() {
-    print('_MyAppState.activateSpeechRecognizer... ');
-    _speech = new SpeechRecognition();
-    _speech.setAvailabilityHandler(onSpeechAvailability);
-    _speech.setCurrentLocaleHandler(onCurrentLocale);
-    _speech.setRecognitionStartedHandler(onRecognitionStarted);
-    _speech.setRecognitionResultHandler(onRecognitionResult);
-    _speech.setRecognitionCompleteHandler(onRecognitionComplete);
-    _speech.activate().then((res) {
-      print('activated $res');
-      setState(() {
-        _speechRecognitionAvailable = res;
-      });
-    });
+  _modalContainer() {
+    return Container(
+      height: 150.0,
+      color: Colors.transparent,
+      child: new Container(
+          child: Column(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.only(left: 8, top: 8),
+            child: Row(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: CircleAvatar(
+                    child: Icon(
+                      Icons.alternate_email,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                    backgroundColor: Colors.indigo,
+                  ),
+                ),
+                getMessageBox('LEFT', 'What do you wanna buy?'),
+              ],
+            ),
+          ),
+//          resultText.isNotEmpty ?
+          Padding(
+            padding: const EdgeInsets.only(right: 8, top: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                getMessageBox('RIGHT', resultText),
+                Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: CircleAvatar(
+                    child: Icon(
+                      Icons.alternate_email,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                    backgroundColor: Colors.indigo,
+                  ),
+                ),
+              ],
+            ),
+          )
+//              : Container(),
+        ],
+      )),
+    );
   }
 
-  void start() => _speech
-      .listen(locale: selectedLang)
-      .then((result) => print('_MyAppState.start => result $result'));
+  void initSpeechRecognizer() {
+    _speechRecognition = SpeechRecognition();
 
-  void cancel() =>
-      _speech.cancel().then((result) => setState(() => _isListening = result));
+    _speechRecognition.setAvailabilityHandler(
+      (bool result) => setState(() => _isAvailable = result),
+    );
 
-  void stop() => _speech.stop().then((result) {
-        setState(() => _isListening = result);
-      });
-
-  void onSpeechAvailability(bool result) =>
-      setState(() => _speechRecognitionAvailable = result);
-
-  void onCurrentLocale(String locale) {
-    print('_MyAppState.onCurrentLocale... $locale');
-    setState(() => selectedLang = locale);
-  }
-
-  void onRecognitionStarted() => setState(() {
+    _speechRecognition.setRecognitionStartedHandler(
+      () => setState(() {
         _isListening = true;
         print('started listening');
-      });
+      }),
+    );
 
-  void onRecognitionResult(String text) => setState(() {
-        transcription = text;
-        print('recognised text $text');
-      });
+    _speechRecognition.setRecognitionResultHandler(
+      (String speech) {
+        _controller.setState(() {
+          resultText = speech;
+          print('result handler $resultText');
+        });
+      },
+    );
 
-  void onRecognitionComplete() => setState(() => _isListening = false);
+    _speechRecognition.setRecognitionCompleteHandler(
+      () => setState(() {
+        _isListening = false;
+        print('listening completed');
+      }),
+    );
 
-  void errorHandler() => activateSpeechRecognizer();
+    _speechRecognition.activate().then(
+          (result) => setState(() => _isAvailable = result),
+        );
+  }
+
+  void startListening() {
+    setState(() {
+      resultText = "";
+    });
+    if (_isAvailable && !_isListening)
+      _speechRecognition
+          .listen(locale: "en_IN")
+          .then((result) => print('result after calling $result'));
+  }
 }
