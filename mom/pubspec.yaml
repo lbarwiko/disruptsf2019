@@ -26,7 +26,8 @@ dependencies:
   webview_flutter: ^0.3.14+1
   http: ^0.12.0+2
   shared_preferences: ^0.5.3+4
-
+  bezier_chart: ^1.0.15
+  syncfusion_flutter_charts: ^17.3.14
 dev_dependencies:
   flutter_test:
     sdk: flutter
