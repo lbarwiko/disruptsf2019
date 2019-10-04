@@ -1,7 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:mom/charts/pie_chart.dart';
 import 'package:speech_recognition/speech_recognition.dart';
 import 'charts/line_area_chart.dart';
+import 'package:http/http.dart' as http;
+
+import 'constants.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -15,6 +20,8 @@ class _HomePageState extends State<HomePage> {
   bool _isModalShown = false;
 
   String resultText = "";
+  String decisionString = "something";
+  String reason = "some reason";
 
   PersistentBottomSheetController _controller; // <------ Instance variable
   final _scaffoldKey =
@@ -127,9 +134,49 @@ class _HomePageState extends State<HomePage> {
 
   getTextMessage(String text) => Text(text);
 
+  getReasonTextBox(String decision, String reason) {
+    return Container(
+      padding: const EdgeInsets.all(12.0),
+      margin: const EdgeInsets.only(top: 10.0, right: 60.0),
+      decoration: BoxDecoration(
+        color: Color(0xFFEDEDED),
+        borderRadius: BorderRadius.only(
+          topRight: Radius.circular(10.0),
+          bottomRight: Radius.circular(10.0),
+          bottomLeft: Radius.circular(15.0),
+        ),
+      ),
+      child: Column(
+        children: <Widget>[
+          Text(decision),
+          Text(reason),
+        ],
+      ),
+    );
+
+//    return Container(
+//      padding: const EdgeInsets.all(12.0),
+//      margin: const EdgeInsets.only(top: 10.0, right: 60.0),
+//      decoration: BoxDecoration(
+//        color: Color(0xFFEDEDED),
+//        borderRadius: BorderRadius.only(
+//          topRight: Radius.circular(10.0),
+//          bottomRight: Radius.circular(10.0),
+//          bottomLeft: Radius.circular(15.0),
+//        ),
+//      ),
+//      child: Column(
+//        children: <Widget>[
+//          Text(decision),
+//          Text(reason),
+//        ],
+//      ),
+//    );
+  }
+
   _modalContainer() {
     return Container(
-      height: 150.0,
+      height: 200.0,
       color: Colors.transparent,
       child: new Container(
           child: Column(
@@ -176,6 +223,25 @@ class _HomePageState extends State<HomePage> {
                   ),
                 )
               : Container(),
+          Padding(
+            padding: const EdgeInsets.only(left: 8, top: 8),
+            child: Row(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: CircleAvatar(
+                    child: Icon(
+                      Icons.alternate_email,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                    backgroundColor: Colors.indigo,
+                  ),
+                ),
+                getReasonTextBox(decisionString, reason),
+              ],
+            ),
+          ),
 //              : Container(),
         ],
       )),
@@ -209,6 +275,7 @@ class _HomePageState extends State<HomePage> {
       () => setState(() {
         _isListening = false;
         print('listening completed');
+        processData();
       }),
     );
 
@@ -226,4 +293,20 @@ class _HomePageState extends State<HomePage> {
           .listen(locale: "en_IN")
           .then((result) => print('result after calling $result'));
   }
+
+  Future processData() async {
+    String dataReceived = resultText;
+    RegExp exp =
+        new RegExp(r"^\$(([1-9]\d{0,2}(,\d{3})*)|(([1-9]\d*)?\d))(\.\d\d)?$");
+    String match = exp.stringMatch(dataReceived);
+    print('somethg $match');
+
+    var result = await http.get('$BASE_URL/decision');
+    Map<String, dynamic> resultMap = json.decode(result.body);
+    Map<String, String> decision = resultMap['decision'];
+    decisionString = decision['decision'];
+    reason = decision['reason'];
+    setState(() {});
+  }
+
 }
