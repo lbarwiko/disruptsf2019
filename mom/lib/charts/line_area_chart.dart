@@ -18,7 +18,7 @@ class _MyLineChartState extends State<MyLineChart> {
     return SfCartesianChart(
       plotAreaBorderWidth: 0,
       title: ChartTitle(
-          text: isTileView ? '' : 'Average high/low temperature of London'),
+          text: isTileView ? '' : 'Previous month expenditure'),
       legend: Legend(isVisible: isTileView ? false : true),
       primaryXAxis: CategoryAxis(
           majorGridLines: MajorGridLines(width: 0),
