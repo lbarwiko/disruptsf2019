@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mom/charts/pie_chart.dart';
 import 'package:speech_recognition/speech_recognition.dart';
 import 'charts/line_area_chart.dart';
-import 'login.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -43,14 +42,6 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-          /*IconButton(
-            icon: Icon(Icons.portrait),
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-                return LoginPage();
-              }));
-            },
-          )*/
         ],
       ),
       body: Container(
@@ -59,7 +50,8 @@ class _HomePageState extends State<HomePage> {
             Expanded(
               child: Container(
                 child: Padding(
-                  padding: const EdgeInsets.all(30.0),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 30, horizontal: 8),
                   child: MyLineChart(),
                 ),
               ),
@@ -162,26 +154,28 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
 //          resultText.isNotEmpty ?
-          Padding(
-            padding: const EdgeInsets.only(right: 8, top: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                getMessageBox('RIGHT', resultText),
-                Padding(
-                  padding: const EdgeInsets.only(left: 4),
-                  child: CircleAvatar(
-                    child: Icon(
-                      Icons.alternate_email,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                    backgroundColor: Colors.indigo,
+          resultText.isNotEmpty
+              ? Padding(
+                  padding: const EdgeInsets.only(right: 8, top: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: <Widget>[
+                      getMessageBox('RIGHT', resultText),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4),
+                        child: CircleAvatar(
+                          child: Icon(
+                            Icons.alternate_email,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                          backgroundColor: Colors.indigo,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-          )
+                )
+              : Container(),
 //              : Container(),
         ],
       )),
