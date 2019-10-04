@@ -139,7 +139,7 @@ class _HomePageState extends State<HomePage> {
   getReasonTextBox(String decision, String reason) {
     return Container(
       padding: const EdgeInsets.all(12.0),
-      margin: const EdgeInsets.only(top: 10.0, right: 60.0),
+      margin: const EdgeInsets.only(top: 10.0, right: 30.0),
       decoration: BoxDecoration(
         color: Color(0xFFEDEDED),
         borderRadius: BorderRadius.only(
@@ -149,14 +149,21 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
             decision,
             softWrap: true,
+            overflow: TextOverflow.ellipsis,
           ),
-          Text(
-            reason,
-            softWrap: true,
+          Container(
+            width: MediaQuery.of(context).size.width * 2 / 3,
+            child: Text(
+              reason,
+              softWrap: true,
+              overflow: TextOverflow.clip,
+            ),
           ),
           FlatButton(
             child: Text(
@@ -172,30 +179,11 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     );
-
-//    return Container(
-//      padding: const EdgeInsets.all(12.0),
-//      margin: const EdgeInsets.only(top: 10.0, right: 60.0),
-//      decoration: BoxDecoration(
-//        color: Color(0xFFEDEDED),
-//        borderRadius: BorderRadius.only(
-//          topRight: Radius.circular(10.0),
-//          bottomRight: Radius.circular(10.0),
-//          bottomLeft: Radius.circular(15.0),
-//        ),
-//      ),
-//      child: Column(
-//        children: <Widget>[
-//          Text(decision),
-//          Text(reason),
-//        ],
-//      ),
-//    );
   }
 
   _modalContainer() {
     return Container(
-      height: 250.0,
+      height: 300.0,
       color: Colors.transparent,
       child: new Container(
           child: Column(
