@@ -5,13 +5,14 @@ import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:http/http.dart' as http;
 
+import '../constants.dart';
+
 class MyLineChart extends StatefulWidget {
   @override
   _MyLineChartState createState() => _MyLineChartState();
 }
 
 class _MyLineChartState extends State<MyLineChart> {
-  static const String BASE_URL = "https://ead733c0.ngrok.io";
 
   @override
   void initState() {
@@ -67,8 +68,6 @@ class _MyLineChartState extends State<MyLineChart> {
     var response = await http.get('$BASE_URL/transactionData');
     Map<String, dynamic> responseMap = json.decode(response.body);
     var spendingList = responseMap['spending'];
-    var income = responseMap['income'];
-    var cateogories = responseMap['cateogories'];
 
     var initialDate = DateTime.now().subtract(Duration(days: 23));
     double prev = 0;

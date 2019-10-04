@@ -1,5 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:http/http.dart' as http;
+
+import '../constants.dart';
 
 class MyPieChart extends StatefulWidget {
   @override
@@ -7,6 +12,12 @@ class MyPieChart extends StatefulWidget {
 }
 
 class _MyPieChartState extends State<MyPieChart> {
+  @override
+  void initState() {
+    super.initState();
+    loadData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -16,10 +27,7 @@ class _MyPieChartState extends State<MyPieChart> {
 
   SfCircularChart getRadiusPieChart(bool isTileView) {
     return SfCircularChart(
-      title: ChartTitle(
-          text: isTileView
-              ? ''
-              : 'Expenditure by categories'),
+      title: ChartTitle(text: isTileView ? '' : 'Expenditure by categories'),
       legend: Legend(
           isVisible: isTileView ? false : true,
           overflowMode: LegendItemOverflowMode.wrap),
@@ -29,15 +37,6 @@ class _MyPieChartState extends State<MyPieChart> {
   }
 
   List<PieSeries<_PieData, String>> getPieSeries(bool isTileView) {
-    final List<_PieData> chartData = <_PieData>[
-      _PieData('Argentina', 505370, '45%'),
-      _PieData('Belgium', 551500, '53.7%'),
-      _PieData('Cuba', 312685, '59.6%'),
-      _PieData('Dominican Republic', 350000, '72.5%'),
-      _PieData('Egypt', 301000, '85.8%'),
-      _PieData('Kazakhstan', 300000, '90.5%'),
-      _PieData('Somalia', 357022, '95.6%')
-    ];
     return <PieSeries<_PieData, String>>[
       PieSeries<_PieData, String>(
           dataSource: chartData,
@@ -50,6 +49,26 @@ class _MyPieChartState extends State<MyPieChart> {
           dataLabelSettings: DataLabelSettings(
               isVisible: true, labelPosition: ChartDataLabelPosition.outside))
     ];
+  }
+
+  final List<_PieData> chartData = <_PieData>[];
+
+  void loadData() async {
+    setState(() {
+      chartData.clear();
+    });
+    var response = await http.get('$BASE_URL/transactionData');
+    Map<String, dynamic> responseMap = json.decode(response.body);
+    Map<String, dynamic> cateogories = responseMap['cateogories'];
+    for (String key in cateogories.keys) {
+      var data = _PieData(key, cateogories[key],
+          (100.0 * (1 - (cateogories[key] / 100))).toString());
+      chartData.add(data);
+    }
+    chartData.sort((_PieData a, _PieData b) {
+      return b.yData - a.yData;
+    });
+    setState(() {});
   }
 }
 
