@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:mom/charts/pie_chart.dart';
+import 'package:mom/expense_report.dart';
 import 'package:speech_recognition/speech_recognition.dart';
 import 'charts/line_area_chart.dart';
 import 'package:http/http.dart' as http;
@@ -18,6 +19,7 @@ class _HomePageState extends State<HomePage> {
   bool _isAvailable = false;
   bool _isListening = false;
   bool _isModalShown = false;
+  bool _fetchedResult = false;
 
   String resultText = "";
   String decisionString = "something";
@@ -148,8 +150,25 @@ class _HomePageState extends State<HomePage> {
       ),
       child: Column(
         children: <Widget>[
-          Text(decision),
-          Text(reason),
+          Text(
+            decision,
+            softWrap: true,
+          ),
+          Text(
+            reason,
+            softWrap: true,
+          ),
+          FlatButton(
+            child: Text(
+              'View more',
+              style: TextStyle(color: Colors.blueAccent),
+            ),
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+                return ExpenseReportPage(resultMap);
+              }));
+            },
+          )
         ],
       ),
     );
@@ -176,7 +195,7 @@ class _HomePageState extends State<HomePage> {
 
   _modalContainer() {
     return Container(
-      height: 200.0,
+      height: 250.0,
       color: Colors.transparent,
       child: new Container(
           child: Column(
@@ -223,25 +242,27 @@ class _HomePageState extends State<HomePage> {
                   ),
                 )
               : Container(),
-          Padding(
-            padding: const EdgeInsets.only(left: 8, top: 8),
-            child: Row(
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(right: 4),
-                  child: CircleAvatar(
-                    child: Icon(
-                      Icons.alternate_email,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                    backgroundColor: Colors.indigo,
+          _fetchedResult
+              ? Padding(
+                  padding: const EdgeInsets.only(left: 8, top: 8),
+                  child: Row(
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(right: 4),
+                        child: CircleAvatar(
+                          child: Icon(
+                            Icons.alternate_email,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                          backgroundColor: Colors.indigo,
+                        ),
+                      ),
+                      getReasonTextBox(decisionString, reason),
+                    ],
                   ),
-                ),
-                getReasonTextBox(decisionString, reason),
-              ],
-            ),
-          ),
+                )
+              : Container(),
 //              : Container(),
         ],
       )),
@@ -287,6 +308,7 @@ class _HomePageState extends State<HomePage> {
   void startListening() {
     setState(() {
       resultText = "";
+      _fetchedResult = false;
     });
     if (_isAvailable && !_isListening)
       _speechRecognition
@@ -302,11 +324,16 @@ class _HomePageState extends State<HomePage> {
     print('somethg $match');
 
     var result = await http.get('$BASE_URL/decision');
-    Map<String, dynamic> resultMap = json.decode(result.body);
-    Map<String, String> decision = resultMap['decision'];
+    resultMap = json.decode(result.body);
+    Map<String, dynamic> decision = resultMap['decision'];
+    print(resultMap);
     decisionString = decision['decision'];
     reason = decision['reason'];
-    setState(() {});
+    print('resaon $reason decision $decisionString');
+    _controller.setState(() {
+      _fetchedResult = true;
+    });
   }
 
+  Map<String, dynamic> resultMap;
 }

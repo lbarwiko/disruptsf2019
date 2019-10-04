@@ -53,6 +53,7 @@ export default (redis, config) => {
       ACCESS_TOKEN = tokenResponse.access_token;
       ITEM_ID = tokenResponse.item_id;
       console.log(tokenResponse);
+      
       response.json({
         access_token: ACCESS_TOKEN,
         item_id: ITEM_ID,
