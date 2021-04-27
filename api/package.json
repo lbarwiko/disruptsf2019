@@ -24,7 +24,7 @@
     "nodemon": "^1.12.1",
     "plaid": "^4.3.0",
     "pm2": "^2.10.1",
-    "redis": "^2.8.0"
+    "redis": "^3.1.1"
   },
   "devDependencies": {
     "@babel/node": "^7.6.2"
